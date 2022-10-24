@@ -1,66 +1,64 @@
-import PropTypes from 'prop-types';
-import { Component } from 'react';
 import { Container } from './section.styled';
 import { Statistics } from './Statistic/Statistics';
-import { FeedbackOptions } from '../components/FeedbackOption/FeedbackOptions';
-import { Notification } from '../components/Notify/Notify';
+import { FeedbackOptions } from './FeedbackOption/FeedbackOptions';
+import { Notification } from './Notify/Notify';
+import PropTypes from 'prop-types';
+import { useState } from 'react';
 
 export const App = () => {
-  return <Section />;
-};
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setBad] = useState(0);
+  const totalCount = () => good + neutral + bad;
 
-export class Section extends Component {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  };
+  const arrayOfButtons = { good, neutral, bad };
+  const keysButtons = Object.keys(arrayOfButtons);
 
-  totalCount() {
-    const { good, neutral, bad } = this.state;
-    return good + neutral + bad;
-  }
-
-  countPercentage(propertyName) {
-    const total = this.totalCount();
-    const value = this.state[propertyName];
-    const percentage = (value / total) * 100;
+  const countPercentage = property => {
+    const percentage = (property / totalCount()) * 100;
     return Number(percentage.toFixed());
-  }
-
-  onLeaveFeedback = e => {
-    const option = e.target.name;
-
-    this.setState(prevState => ({ [option]: prevState[option] + 1 }));
   };
 
-  render() {
-    const { good, neutral, bad } = this.state;
-    const total = this.totalCount();
-    const percentage = this.countPercentage('good');
-    const options = Object.keys(this.state);
-    const onLeaveFeedback = this.onLeaveFeedback;
-    return (
+  const percentage = countPercentage(good);
+
+  const onLeaveFeedback = property => {
+    switch (property) {
+      case 'good':
+        return setGood(prev => prev + 1);
+      case 'neutral':
+        return setNeutral(prev => prev + 1);
+      case 'bad':
+        return setBad(prev => prev + 1);
+      default:
+        return;
+    }
+  };
+
+  return (
+    <div>
       <Container>
         <h1>Please leave feedback</h1>
-        <FeedbackOptions options={options} onLeaveFeedback={onLeaveFeedback} />
-        {total ? (
+        <FeedbackOptions
+          options={keysButtons}
+          onLeaveFeedback={onLeaveFeedback}
+        />
+        {totalCount() ? (
           <Statistics
             good={good}
             neutral={neutral}
             bad={bad}
-            total={total}
+            total={totalCount()}
             percentage={percentage}
           />
         ) : (
           <Notification />
         )}
       </Container>
-    );
-  }
-}
+    </div>
+  );
+};
 
-Section.propTypes = {
+App.propTypes = {
   div: PropTypes.string,
   h2: PropTypes.string,
   button: PropTypes.string,
